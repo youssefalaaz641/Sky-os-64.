@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sky OS - محاكاة متقدمة</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --card-dark: #1e1e1e;
+      --border-dark: #444;
+      --text-light: #ffffff;
+      --text-gray: #b0b0b0;
+      --accent-blue: #007aff;
+      --app-icon-size: 64px;
+      --app-label-size: 13px;
+      --transition-speed: 0.3s;
+      --transition-ease: ease-out;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-dark);
+      color: var(--text-light);
+      font-family: "Segoe UI", sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      -webkit-user-select: none; /* Prevent text selection on mobile */
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      background: var(--card-dark);
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 16px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border-dark);
+      z-index: 100; /* Ensure it's always on top */
+    }
+
+    /* Notification Bar */
+    .notification-bar {
+      background: var(--card-dark);
+      padding: 10px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      border-bottom: 1px solid var(--border-dark);
+      transition: transform var(--transition-speed) var(--transition-ease), opacity var(--transition-speed) var(--transition-ease);
+      transform: translateY(0); /* Default position */
+      opacity: 1;
+      position: relative; /* Needed for positioning inside */
+      z-index: 90;
+    }
+
+    .notification-bar.hidden {
+      transform: translateY(-100%); /* Slide up */
+      opacity: 0;
+      pointer-events: none; /* Make it unclickable when hidden */
+    }
+
+    .notif-icon {
+      width: 60px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-gray);
+    }
+
+    .notif-icon i {
+      font-size: 20px;
+      display: block;
+      margin-bottom: 5px;
+      color: var(--text-light);
+    }
+
+    /* App Pages Container */
+    .pages-container {
+      flex-grow: 1; /* Take remaining vertical space */
+      display: flex;
+      transition: transform var(--transition-speed) var(--transition-ease);
+      /* This width assumes 3 pages, adjust if more/less */
+      width: 300vw;
+      position: relative;
+      overflow: hidden; /* Hide overflow during swipe */
+      z-index: 50;
+    }
+
+    .page {
+      width: 100vw;
+      flex-shrink: 0; /* Prevent pages from shrinking */
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding: 20px;
+      box-sizing: border-box;
+      align-content: flex-start; /* Align apps to the top */
+    }
+
+    /* App Icon */
+    .app {
+      width: 70px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5px; /* Add some padding for touch target */
+      border-radius: 12px;
+      transition: transform 0.1s ease-out; /* For click feedback */
+    }
+
+    .app:active {
+      transform: scale(0.9); /* Visual feedback on tap */
+    }
+
+    .app img {
+      width: var(--app-icon-size);
+      height: var(--app-icon-size);
+      border-radius: 16px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+    }
+
+    .app span {
+      font-size: var(--app-label-size);
+      display: block;
+      margin-top: 8px;
+      white-space: nowrap; /* Prevent text wrapping */
+      overflow: hidden;
+      text-overflow: ellipsis; /* Add ellipsis for long names */
+      max-width: 100%; /* Ensure ellipsis works */
+    }
+
+    /* App Screen Overlay */
+    .app-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background: var(--bg-dark); /* Or a specific app background */
+      width: 100vw;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      transform: translateY(100%); /* Start off-screen */
+      opacity: 0;
+      transition: transform var(--transition-speed) var(--transition-ease), opacity var(--transition-speed) var(--transition-ease);
+      z-index: 200; /* Higher than pages */
+    }
+
+    .app-screen.active {
+      transform: translateY(0); /* Slide in */
+      opacity: 1;
+    }
+
+    .app-screen h2 {
+      margin-top: 40px; /* Space from top */
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .app-screen p {
+      color: var(--text-gray);
+      line-height: 1.6;
+    }
+
+    .app-screen button {
+      background: var(--accent-blue);
+      color: var(--text-light);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .app-screen button:hover {
+      background: #005bb5;
+    }
+
+    /* Slider Dots */
+    .slider {
+      position: absolute;
+      bottom: 12px;
+      width: 100%;
+      text-align: center;
+      z-index: 150; /* Above pages */
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--text-gray);
+      border-radius: 50%;
+      margin: 0 5px;
+      transition: background 0.3s ease;
+    }
+
+    .dot.active {
+      background: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+  <div class="status-bar">
+    <span><i class="fas fa-signal"></i> فودافون</span>
+    <span id="clock">12:00</span>
+    <span><i class="fas fa-battery-half"></i> 84%</span>
+  </div>
+
+  <div class="notification-bar" id="notificationBar">
+    <div class="notif-icon"><i class="fas fa-wifi"></i>Wi-Fi</div>
+    <div class="notif-icon"><i class="fas fa-volume-up"></i>الصوت</div>
+    <div class="notif-icon"><i class="fas fa-chart-bar"></i>البيانات</div>
+    <div class="notif-icon"><i class="fas fa-plane-departure"></i>الطيران</div>
+    <div class="notif-icon"><i class="fas fa-lightbulb"></i>الفلاش</div>
+  </div>
+
+  <div id="appScreen" class="app-screen">
+    <h2 id="appTitle">تطبيق</h2>
+    <p id="appContent">محتوى وهمي للتطبيق. هنا سيظهر محتوى كل تطبيق.</p>
+    <button onclick="closeApp()">إغلاق</button>
+  </div>
+
+  <div id="pages" class="pages-container">
+    <div class="page" id="page0">
+      <div class="app" onclick="openApp('الإعدادات', '<p>هذه شاشة الإعدادات. يمكنك إضافة المزيد من الخيارات هنا.</p>')">
+        <img src="https://img.icons8.com/fluency/96/settings.png" alt="Settings" />
+        <span>الإعدادات</span>
+      </div>
+      <div class="app" onclick="openApp('الهاتف', '<p>تطبيق الهاتف. تخيل إجراء مكالمات هنا!</p>')">
+        <img src="https://img.icons8.com/fluency/96/phone.png" alt="Phone" />
+        <span>الهاتف</span>
+      </div>
+      <div class="app" onclick="openApp('الرسائل', '<p>تطبيق الرسائل. قائمة بالدردشات.</p>')">
+        <img src="https://img.icons8.com/fluency/96/sms.png" alt="Messages" />
+        <span>الرسائل</span>
+      </div>
+      <div class="app" onclick="openApp('التقويم', '<p>عرض التقويم والأحداث هنا.</p>')">
+        <img src="https://img.icons8.com/fluency/96/calendar--v1.png" alt="Calendar" />
+        <span>التقويم</span>
+      </div>
+      <div class="app" onclick="openApp('الطقس', '<p>تطبيق الطقس. عرض درجة الحرارة والتوقعات.</p>')">
+        <img src="https://img.icons8.com/fluency/96/partly-cloudy-day.png" alt="Weather" />
+        <span>الطقس</span>
+      </div>
+      <div class="app" onclick="openApp('الملاحظات', '<p>تطبيق الملاحظات. اكتب أفكارك هنا.</p>')">
+        <img src="https://img.icons8.com/fluency/96/note.png" alt="Notes" />
+        <span>الملاحظات</span>
+      </div>
+    </div>
+
+    <div class="page" id="page1">
+      <div class="app" onclick="openApp('الكاميرا', '<p>محاكاة الكاميرا. انقر لالتقاط صورة!</p>')">
+        <img src="https://img.icons8.com/fluency/96/camera.png" alt="Camera" />
+        <span>الكاميرا</span>
+      </div>
+      <div class="app" onclick="openApp('المعرض', '<p>تطبيق المعرض. صورك هنا.</p>')">
+        <img src="https://img.icons8.com/fluency/96/gallery.png" alt="Gallery" />
+        <span>المعرض</span>
+      </div>
+      <div class="app" onclick="openApp('يوتيوب', '<p>تطبيق يوتيوب. شاهد مقاطع الفيديو.</p>')">
+        <img src="https://img.icons8.com/fluency/96/youtube-play.png" alt="YouTube" />
+        <span>يوتيوب</span>
+      </div>
+      <div class="app" onclick="openApp('الخرائط', '<p>تطبيق الخرائط. ابحث عن الأماكن.</p>')">
+        <img src="https://img.icons8.com/fluency/96/google-maps.png" alt="Maps" />
+        <span>الخرائط</span>
+      </div>
+      <div class="app" onclick="openApp('المتصفح', '<p>متصفح الويب. تصفح الإنترنت.</p>')">
+        <img src="https://img.icons8.com/fluency/96/chrome.png" alt="Browser" />
+        <span>المتصفح</span>
+      </div>
+    </div>
+
+    <div class="page" id="page2">
+      <div class="app" onclick="openApp('الموسيقى', '<p>مشغل الموسيقى. استمع إلى أغانيك المفضلة.</p>')">
+        <img src="https://img.icons8.com/fluency/96/music.png" alt="Music" />
+        <span>الموسيقى</span>
+      </div>
+      <div class="app" onclick="openApp('المتجر', '<p>متجر التطبيقات. ابحث عن تطبيقات جديدة.</p>')">
+        <img src="https://img.icons8.com/fluency/96/google-play.png" alt="Store" />
+        <span>المتجر</span>
+      </div>
+      <div class="app" onclick="openApp('الملفات', '<p>مدير الملفات. تصفح ملفاتك.</p>')">
+        <img src="https://img.icons8.com/fluency/96/folder-invoices.png" alt="Files" />
+        <span>الملفات</span>
+      </div>
+      <div class="app" onclick="openApp('الساعة', '<p>تطبيق الساعة. مؤقت ومنبه!</p>')">
+        <img src="https://img.icons8.com/fluency/96/alarm-clock--v1.png" alt="Clock" />
+        <span>الساعة</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="slider">
+    <span class="dot active" id="dot0"></span>
+    <span class="dot" id="dot1"></span>
+    <span class="dot" id="dot2"></span>
+  </div>
+
+  <script>
+    let currentPage = 0;
+    const totalPages = document.querySelectorAll('.page').length;
+    const pagesContainer = document.getElementById('pages');
+    const appScreen = document.getElementById('appScreen');
+    const appTitle = document.getElementById('appTitle');
+    const appContent = document.getElementById('appContent');
+    const notificationBar = document.getElementById('notificationBar');
+
+    let startX = 0;
+    let isSwiping = false;
+    let initialTranslateX = 0;
+
+    // --- Utility Functions ---
+    function updateClock() {
+      const now = new Date();
+      let h = now.getHours().toString().padStart(2, '0');
+      let m = now.getMinutes().toString().padStart(2, '0');
+      document.getElementById('clock').innerText = `${h}:${m}`;
+    }
+
+    function updateDots() {
+      document.querySelectorAll('.dot').forEach((dot, index) => {
+        if (index === currentPage) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+    }
+
+    function animatePagesToCurrent() {
+      pagesContainer.style.transform = `translateX(-${currentPage * 100}vw)`;
+      updateDots();
+    }
+
+    // --- App Management ---
+    function openApp(name, contentHTML) {
+      appTitle.innerText = name;
+      appContent.innerHTML = contentHTML; // Set the app-specific content
+      appScreen.classList.add('active');
+      notificationBar.classList.add('hidden'); // Hide notification bar
+    }
+
+    function closeApp() {
+      appScreen.classList.remove('active');
+      notificationBar.classList.remove('hidden'); // Show notification bar
+    }
+
+    // --- Swipe Handling ---
+    function startSwipe(event) {
+      isSwiping = true;
+      startX = event.touches[0].clientX;
+      // Get the current transform value
+      const transformMatch = getComputedStyle(pagesContainer).transform.match(/translateX\(([^)]+)px\)/);
+      initialTranslateX = transformMatch ? parseFloat(transformMatch[1]) : 0;
+      // Disable CSS transition during swipe for smooth dragging
+      pagesContainer.style.transition = 'none';
+    }
+
+    function moveSwipe(event) {
+      if (!isSwiping) return;
+      let currentX = event.touches[0].clientX;
+      let deltaX = currentX - startX;
+      // Calculate new transform based on drag
+      let newTranslateX = initialTranslateX + deltaX;
+
+      // Restrict swipe boundaries (optional, but good for realism)
+      const maxSwipeRight = 0; // First page at 0vw
+      const maxSwipeLeft = -(totalPages - 1) * window.innerWidth; // Last page
+
+      newTranslateX = Math.max(maxSwipeLeft, Math.min(maxSwipeRight, newTranslateX));
+
+      pagesContainer.style.transform = `translateX(${newTranslateX}px)`;
+    }
+
+    function endSwipe() {
+      if (!isSwiping) return;
+      isSwiping = false;
+      // Re-enable CSS transition
+      pagesContainer.style.transition = `transform var(--transition-speed) var(--transition-ease)`;
+
+      let endX = event.changedTouches[0].clientX;
+      let diff = startX - endX; // Positive for left swipe, negative for right swipe
+
+      // Determine if a page swipe occurred (threshold 50px)
+      if (diff > 50 && currentPage < totalPages - 1) {
+        currentPage++;
+      } else if (diff < -50 && currentPage > 0) {
+        currentPage--;
+      }
+      // Animate to the final page
+      animatePagesToCurrent();
+    }
+
+    // --- Event Listeners ---
+    pagesContainer.addEventListener('touchstart', startSwipe);
+    pagesContainer.addEventListener('touchmove', moveSwipe);
+    pagesContainer.addEventListener('touchend', endSwipe);
+
+    // Initial setup
+    setInterval(updateClock, 1000);
+    updateClock();
+    updateDots(); // Ensure dots are correct on load
+  </script>
+</body>
+</html>
