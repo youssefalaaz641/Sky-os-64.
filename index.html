@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sky OS - الموبايل الوهمي</title>
+<style>
+  /* خلفيات متغيرة */
+  body {
+    margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    overflow: hidden;
+  }
+  @keyframes bgChange {
+    0% {background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');}
+    33% {background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1470&q=80');}
+    66% {background-image: url('https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1470&q=80');}
+    100% {background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80');}
+  }
+  body.animate-bg {
+    animation: bgChange 30s ease-in-out infinite;
+  }
+
+  /* شاشة القفل */
+  #lockScreen {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 9999;
+  }
+  #lockScreen h2 {
+    font-size: 24px; margin-bottom: 20px;
+  }
+  #fingerprint {
+    width: 100px; height: 100px;
+    background: radial-gradient(circle at center, #0af 40%, transparent 70%);
+    border-radius: 50%;
+    box-shadow: 0 0 15px #0af;
+    cursor: pointer;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 15px #0af; }
+    50% { box-shadow: 0 0 40px #0af; }
+  }
+
+  /* بعد فتح القفل */
+  #homeScreen {
+    display: none;
+    padding: 20px;
+  }
+  .status-bar {
+    display: flex; justify-content: space-between; font-size: 14px;
+    background: rgba(0,0,0,0.6); padding: 5px 10px; border-radius: 10px;
+  }
+  .apps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 15px; margin-top: 20px;
+  }
+  .app {
+    background: rgba(0,0,0,0.5);
+    border-radius: 20px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.3s ease;
+  }
+  .app:hover {
+    transform: scale(1.1);
+    background: rgba(0,0,0,0.7);
+  }
+  .app-icon {
+    font-size: 32px; margin-bottom: 8px;
+  }
+
+  /* مركز تحكم بسيط */
+  #controlCenter {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(0,0,0,0.8);
+    display: flex; justify-content: space-around;
+    padding: 10px 0;
+    border-radius: 15px 15px 0 0;
+    font-size: 20px;
+    color: white;
+  }
+  #controlCenter div {
+    cursor: pointer;
+  }
+
+  /* موسيقى */
+  #musicPlayer {
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    border-radius: 15px;
+    padding: 10px 20px;
+    display: none;
+    align-items: center;
+    gap: 15px;
+  }
+  #musicPlayer button {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 18px;
+  }
+
+  /* إشعارات وهمية */
+  #notifications {
+    position: fixed; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    max-width: 250px;
+    font-size: 14px;
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #notifications .notif {
+    background: #0af;
+    padding: 8px 12px;
+    border-radius: 10px;
+  }
+
+  /* Always On Display وهمي */
+  #aod {
+    position: fixed;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    color: #00ffcc;
+    font-size: 18px;
+    background: rgba(0,0,0,0.6);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-family: monospace;
+    letter-spacing: 3px;
+  }
+</style>
+</head>
+<body class="animate-bg">
+
+<!-- شاشة القفل -->
+<div id="lockScreen">
+  <h2>مرحبًا بك في Sky OS</h2>
+  <div id="fingerprint" title="اضغط للبصمة"></div>
+  <p>اضغط على البصمة لفتح القفل</p>
+</div>
+
+<!-- الشاشة الرئيسية -->
+<div id="homeScreen">
+  <div class="status-bar">
+    <div id="time"></div>
+    <div>🔋 89%</div>
+  </div>
+
+  <div class="apps">
+    <div class="app" onclick="alert('Coming Soon! 📷 Camera')">
+      <div class="app-icon">📷</div>
+      كاميرا
+    </div>
+    <div class="app" onclick="alert('Calling... الرقم غير متاح الآن')">
+      <div class="app-icon">📞</div>
+      شريحة فودافون
+    </div>
+    <div class="app" onclick="showNotifications()">
+      <div class="app-icon">✉️</div>
+      رسائل
+    </div>
+    <div class="app" onclick="window.open('https://www.youtube.com/watch?v=H8J7yZ_vFz8', '_blank')">
+      <div class="app-icon">▶️</div>
+      فيديو S25 ألترا
+    </div>
+    <div class="app" onclick="window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank')">
+      <div class="app-icon">▶️</div>
+      فيديو Vivo X200 Ultra
+    </div>
+    <div class="app" onclick="toggleMusicPlayer()">
+      <div class="app-icon">🎵</div>
+      موسيقى
+    </div>
+    <div class="app" onclick="alert('تم فتح الإعدادات')">
+      <div class="app-icon">⚙️</div>
+      الإعدادات
+    </div>
+  </div>
+
+  <!-- مركز التحكم -->
+  <div id="controlCenter">
+    <div onclick="toggleWifi()">📶 WiFi</div>
+    <div onclick="toggleBluetooth()">🔵 Bluetooth</div>
+    <div onclick="toggleAirplane()">✈️ وضع الطيران</div>
+  </div>
+
+  <!-- مشغل الموسيقى -->
+  <div id="musicPlayer">
+    <button onclick="pauseMusic()">⏸</button>
+    <button onclick="playMusic()">▶️</button>
+    <audio id="audio" loop>
+      <source src="https://cdn.pixabay.com/download/audio/2022/10/26/audio_59f04f76e5.mp3?filename=chill-out-ambient-14293.mp3" type="audio/mp3" />
+      متصفحك لا يدعم مشغل الصوت.
+    </audio>
+  </div>
+
+  <!-- إشعارات -->
+  <div id="notifications"></div>
+
+  <!-- Always On Display -->
+  <div id="aod"></div>
+</div>
+
+<script>
+  // خلفيات متغيرة (حركية)
+  const bgImages = [
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1470&q=80',
+    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1470&q=80',
+    'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1470&q=80'
+  ];
+  let bgIndex = 0;
+  function changeBackground() {
+    document.body.style.backgroundImage = `url(${bgImages[bgIndex]})`;
+    bgIndex = (bgIndex + 1) % bgImages.length;
+  }
+  setInterval(changeBackground, 15000);
+  changeBackground();
+
+  // شاشة القفل وبصمة
+  const lockScreen = document.getElementById('lockScreen');
+  const homeScreen = document.getElementById('homeScreen');
+  const fingerprint = document.getElementById('fingerprint');
+
+  fingerprint.addEventListener('click', () => {
+    lockScreen.style.display = 'none';
+    homeScreen.style.display = 'block';
+  });
+
+  // الوقت في الحالة و AOD
+  const timeElem = document.getElementById('time');
+  const aodElem = document.getElementById('aod');
+
+  function updateTime() {
+    const now = new Date <script>
+  const fingerprint = document.getElementById('fingerprint');
+  const lockScreen = document.getElementById('lockScreen');
+  const homeScreen = document.getElementById('homeScreen');
+
+  if (fingerprint) {
+    fingerprint.addEventListener('click', () => {
+      lockScreen.style.display = 'none';
+      homeScreen.style.display = 'block';
+    });
+  }
+
+  // الوقت
+  const timeElem = document.getElementById('time');
+  const aodElem = document.getElementById('aod');
+  function updateTime() {
+    const now = new Date();
+    const h = now.getHours().toString().padStart(2, '0');
+    const m = now.getMinutes().toString().padStart(2, '0');
+    timeElem.textContent = `${h}:${m}`;
+    aodElem.textContent = `${h}:${m}`;
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+</script>
