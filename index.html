@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sky OS</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: sans-serif;
+      background: url('https://i.imgur.com/Ro2jtpz.jpeg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      overflow: hidden;
+    }
+    .status-bar {
+      height: 30px;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    .pages {
+      display: flex;
+      width: 300vw;
+      transition: transform 0.4s ease-in-out;
+    }
+    .screen {
+      width: 100vw;
+      height: calc(100vh - 30px);
+      flex-shrink: 0;
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-content: flex-start;
+      gap: 15px;
+    }
+    .app {
+      width: 72px;
+      text-align: center;
+    }
+    .app img {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.1);
+      padding: 10px;
+    }
+    .app span {
+      display: block;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .dots {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+    }
+    .dot.active {
+      background: white;
+    }
+  </style>
+</head>
+<body ontouchstart="start(event)" ontouchmove="move(event)" ontouchend="end(event)">
+
+  <div class="status-bar">
+    <span>📶 Vodafone</span>
+    <span id="clock">--:--</span>
+    <span>🔋 85%</span>
+  </div>
+
+  <div class="pages" id="pages">
+    <div class="screen">
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/settings.png"/><span>Settings</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/gallery.png"/><span>Gallery</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/sms.png"/><span>Messages</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/music.png"/><span>Music</span></div>
+    </div>
+    <div class="screen">
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/camera.png"/><span>Camera</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/clock.png"/><span>Clock</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/phone.png"/><span>Phone</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/note.png"/><span>Notes</span></div>
+    </div>
+    <div class="screen">
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/youtube-play.png"/><span>YouTube</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/google-play.png"/><span>Play Store</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/wifi.png"/><span>Wi-Fi</span></div>
+      <div class="app"><img src="https://img.icons8.com/ios-filled/50/help.png"/><span>Help</span></div>
+    </div>
+  </div>
+
+  <div class="dots">
+    <span class="dot active"></span>
+    <span class="dot"></span>
+    <span class="dot"></span>
+  </div>
+
+<script>
+  // Clock
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById("clock").innerText =
+      now.getHours().toString().padStart(2, "0") + ":" +
+      now.getMinutes().toString().padStart(2, "0");
+  }, 1000);
+
+  // Swipe logic
+  let currentPage = 0;
+  let startX = 0;
+  const pages = document.getElementById("pages");
+  const dots = document.querySelectorAll(".dot");
+
+  function updatePage() {
+    pages.style.transform = `translateX(-${currentPage * 100}vw)`;
+    dots.forEach((d, i) => d.classList.toggle("active", i === currentPage));
+  }
+
+  function start(e) {
+    startX = e.touches[0].clientX;
+  }
+
+  function move(e) {
+    const diff = e.touches[0].clientX - startX;
+    if (Math.abs(diff) > 50) {
+      if (diff < 0 && currentPage < 2) currentPage++;
+      else if (diff > 0 && currentPage > 0) currentPage--;
+      updatePage();
+      startX = e.touches[0].clientX; // Reset swipe
+    }
+  }
+
+  function end() {}
+</script>
+
+</body>
+</html>
